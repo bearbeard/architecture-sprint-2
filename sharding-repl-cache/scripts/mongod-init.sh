@@ -11,6 +11,8 @@ rs.initiate(
       configsvr: true,
     members: [
       { _id : 0, host : "configSrv1:27017" },
+      { _id : 1, host : "configSrv2:27018" },
+      { _id : 2, host : "configSrv3:27019" }
     ]
   }
 );
@@ -21,7 +23,9 @@ rs.initiate(
     {
       _id : "shard1",
       members: [
-        { _id : 0, host : "shard1:27023" }
+        { _id : 0, host : "shard1:27023" },
+        { _id : 1, host : "shard1-2:27024" },
+        { _id : 2, host : "shard1-3:27025" }
       ]
     }
 );
@@ -33,23 +37,9 @@ rs.initiate(
       _id : "shard2",
       members: [
         { _id : 0, host : "shard2:27026" },
+        { _id : 1, host : "shard2-2:27027" },
+        { _id : 2, host : "shard2-3:27028" }
       ]
     }
 );
-EOF
-
-docker compose exec -T mongos_router1 mongosh --port 27020 --quiet <<EOF
-sh.addShard("shard1/shard1:27023");
-sh.addShard("shard2/shard2:27026");
-sh.enableSharding("somedb");
-sh.shardCollection("somedb.helloDoc", { "name" : "hashed" } )
-EOF
-
-###
-# Инициализация бд
-###
-
-docker compose exec -T mongos_router1 mongosh --port 27020 --quiet <<EOF
-use somedb
-for(var i = 0; i < 1000; i++) db.helloDoc.insertOne({age:i, name:"ly"+i})
 EOF
